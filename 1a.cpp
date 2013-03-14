@@ -79,11 +79,13 @@ int main(int argc, char **argv)
 		for (int j = 0; j < rowCount; j++)
 			for (int k = 0; k < blockSizes[index]; k++)
 				_b[j] += A[j][blockOffsets[index] + k] * _x[k];
-
+				
+		vector<double> __x(blockSizes[(index + size - 1) % size]);
 		MPI_Sendrecv(&_x[0], blockSizes[index], MPI_INT, (rank + 1) % size, 0, 
-					 &_x[0], blockSizes[(index + size - 1) % size], MPI_INT, (rank + size - 1) % size, 0,
+					 &__x[0], blockSizes[(index + size - 1) % size], MPI_INT, (rank + size - 1) % size, 0,
 					 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		index = (index + size - 1) % size;		
+		_x = __x;
 	}
 
 	if (rank != 0)

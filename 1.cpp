@@ -23,7 +23,7 @@ void fill_x(int &xElem, int n)
 {
 	xElem = 1;
 }
-void mulPart(int rank, int size, vector<vector<int> > &A, vector<int> _x, vector<int> &res)
+void mulPart(int rank, int size, vector<vector<int> > &A, vector<int> &_x, vector<int> &res)
 {
 	int initSize = _x.size();
 	int blockSize = getSize(N, rank, size);
@@ -33,20 +33,28 @@ void mulPart(int rank, int size, vector<vector<int> > &A, vector<int> _x, vector
 	
 	int nPrev = (rank - 1 + size) % size;
 	int nNext = (rank + 1) % size;
-	for (int i = 0; i < size; i++)
-	{	
-		for (int j = 0; j < rowCount; j++)
-			for (int k = 0; k < blockSize; k++)
-				res[j] += A[j][blockOffset + k] * _x[k];
-	
-		int curSize = blockSize;
-		blockSize = getSize(N, (nPrev - i + size) % size, size);
-		blockOffset = getOffset(N, (nPrev - i + size) % size, size);
-		MPI_Sendrecv(&_x[0], curSize, MPI_INT, nNext, 0, //
-					 &_x[0], blockSize, MPI_INT, nPrev, 0,
-					 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		
-	}
+	if (size == 1)
+		for (int i = 0; i < size; i++)
+			for (int j = 0; j < rowCount; j++)
+				for (int k = 0; k < blockSize; k++)
+					res[j] += A[j][blockOffset + k] * _x[k];
+	else
+		for (int i = 0; i < size; i++)
+		{
+			for (int j = 0; j < rowCount; j++)
+				for (int k = 0; k < blockSize; k++)
+					res[j] += A[j][blockOffset + k] * _x[k];
+			
+			int curSize = blockSize;
+			blockSize = getSize(N, (nPrev - i + size) % size, size);
+			blockOffset = getOffset(N, (nPrev - i + size) % size, size);
+			vector<double> __x(blockSize);
+			MPI_Sendrecv(&_x[0], curSize, MPI_DOUBLE, nNext, 0, 
+						 &__x[0], blockSize, MPI_DOUBLE, nPrev, 0,
+						 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			_x = __x;
+			_x.resize(N / size + 1);
+		}
 	_x.resize(initSize);
 }
 void show()
