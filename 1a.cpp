@@ -73,14 +73,15 @@ int main(int argc, char **argv)
 	vector<int> _x(N / size + 1);
 	for (int i = 0; i < blockSizes[index]; i++)
 			fill_x(_x[i], i + blockOffsets[index]);
-	
+			
+	vector<double> __x(N / size + 1);
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < rowCount; j++)
 			for (int k = 0; k < blockSizes[index]; k++)
 				_b[j] += A[j][blockOffsets[index] + k] * _x[k];
 				
-		vector<double> __x(blockSizes[(index + size - 1) % size]);
+		
 		MPI_Sendrecv(&_x[0], blockSizes[index], MPI_INT, (rank + 1) % size, 0, 
 					 &__x[0], blockSizes[(index + size - 1) % size], MPI_INT, (rank + size - 1) % size, 0,
 					 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
