@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 	for (int i = 0; i < blockSizes[index]; i++)
 			fill_x(_x[i], i + blockOffsets[index]);
 			
-	vector<double> __x(N / size + 1);
+	vector<int> __x(N / size + 1);
 	for (int i = 0; i < size; i++)
 	{
 		for (int j = 0; j < rowCount; j++)
