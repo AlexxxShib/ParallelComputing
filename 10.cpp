@@ -19,10 +19,10 @@ inline double f(double x)
 
 int main(int argc, char **argv)
 {
-    int rank, size;
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+	int rank, size;
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	double partSum = 0;
 	int pSize = rank != size - 1 ? 
 			N / size : 
