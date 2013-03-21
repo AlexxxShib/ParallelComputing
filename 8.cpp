@@ -7,7 +7,7 @@
 using namespace std;
 
 const int M = 5000;
-const int N = 5000;
+const int N = M;
 vector<vector<int> > A(M);
 vector<int> b(M);
 vector<int> x(N, 1);
@@ -19,7 +19,7 @@ void fill_A(vector<int> &row, int nRow)
 }
 void mul1()
 {
-	#pragma omp parallel num_threads(4)
+	#pragma omp parallel
 	{
 		#pragma omp for
 		for (int i = 0; i < M; i++)
@@ -44,7 +44,7 @@ void mul3()
 		int blockOffset = rank < M % size ? (M / size + 1) * rank : 
 										 (M - (M / size) * (size - rank));
 
-		for (int i = blockOffset; i < blockOffset + blockSize + 100; i++)
+		for (int i = blockOffset; i < blockOffset + blockSize; i++)
 			for (int j = 0; j < N; j++)
 				b[i] += A[i][j] * x[j];
 	}
