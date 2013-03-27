@@ -25,9 +25,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	in.read((char*)&v[0], Nx * Ny * sizeof(double));
 	_max = *max_element(v.begin(), v.end());
 	_min = *min_element(v.begin(), v.end());
-	vector<vector<double>> vv(Ny);
+	/*vector<vector<double>> vv(Ny);
 	for (int i = 0; i < Ny; i++)
-		vv[i] = vector<double>(v.begin() + i * Nx, v.begin() + i * Nx + Nx);
+		vv[i] = vector<double>(v.begin() + i * Nx, v.begin() + i * Nx + Nx);*/
 
 	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
