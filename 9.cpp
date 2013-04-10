@@ -47,12 +47,8 @@ void solve1()
 			}
 			if (normXSquared / normBSquared < epsilon * epsilon)
 				break;	
-			#pragma omp barrier
-			#pragma omp single
-			{
-				buf.assign(buf.size(), 0.);	
-				normXSquared = 0;
-			}
+			buf.assign(buf.size(), 0.);	
+			normXSquared = 0;
 		}
 	}
 }
