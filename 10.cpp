@@ -40,10 +40,8 @@ int main(int argc, char **argv)
 				pSize / nThreads + pSize % nThreads;
 		int tOffset = tRank * (pSize / nThreads);
 		double d = d0 + tOffset * STEP;
-		for (int i = 0; i < nThreads; i++)
-			if (i == tRank)
-				for (int j = 0; j < tSize; j++, d += STEP)
-					partSum += f(d);
+		for (int j = 0; j < tSize; j++, d += STEP)
+			partSum += f(d);
 	}
 	t = MPI_Wtime() - t;
 	for (int i = 0; i < size; i++)

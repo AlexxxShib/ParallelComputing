@@ -1,0 +1,18 @@
+# C++ objects and libs
+
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.dll
+*.dylib
+*.bat
+# Qt-es
+
+*.pro.user
+*.pro.user.*
+Makefile
+*-build-*

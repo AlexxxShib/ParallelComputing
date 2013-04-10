@@ -77,12 +77,9 @@ void solve2()
 		}
 		if (normXSquared / normBSquared < epsilon * epsilon)
 			break;	
-		#pragma omp barrier
-		#pragma omp single
-		{
-			buf.assign(buf.size(), 0.);	
-			normXSquared = 0;
-		}	
+			
+		buf.assign(buf.size(), 0.);	
+		normXSquared = 0;
 	}
 }
 int main(int argc, char **argv)
