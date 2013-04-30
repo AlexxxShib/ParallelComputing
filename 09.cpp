@@ -46,9 +46,14 @@ void solve1()
 				x[i] -= buf[i] * tau;
 			}
 			if (normXSquared / normBSquared < epsilon * epsilon)
-				break;	
-			buf.assign(buf.size(), 0.);	
-			normXSquared = 0;
+				break;
+
+			#pragma omp barrier
+			#pragma omp single
+			{
+				buf.assign(buf.size(), 0.);	
+				normXSquared = 0;
+			}
 		}
 	}
 }
@@ -68,8 +73,7 @@ void solve2()
 		{
 			buf[i] -= b[i];
 			normXSquared += buf[i] * buf[i];
-			x[i] -= buf[i] * tau;
-			
+			x[i] -= buf[i] * tau;	
 		}
 		if (normXSquared / normBSquared < epsilon * epsilon)
 			break;	
@@ -88,7 +92,7 @@ int main(int argc, char **argv)
 		normBSquared += b[i] * b[i];
 	}
 	double start = omp_get_wtime();
-	solve2();
+	solve1();
 	cout<<"Time: "<<omp_get_wtime() - start<<" s"<<endl;
 	for (int i = 0; i < N; i++)
 		cout<<setw(2)<<x[i]<<" ";
