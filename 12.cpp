@@ -191,6 +191,7 @@ struct CommHelper
 	function<void(vector<double>&)> readBorder;
 	function<void(vector<double>&)> writeBorder;
 	int rank;
+
 	CommHelper()
 	{
 	}
@@ -206,6 +207,12 @@ struct CommHelper
 		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 		recvBuffer.resize(borderSize);
 		sendBuffer.resize(borderSize);
+	}
+
+	void recvSync()
+	{
+		recv();
+		waitRecv();
 	}
 
 	void recv()
@@ -344,7 +351,6 @@ struct Solver
 			problemData.borderInfos[Down].isContained = true;
 			yHi--;
 		}
-		//cout<<rank<<" "<<xLow<<" "<<xHi<<" "<<yLow<<" "<<yHi<<" "<<coords[0]<<" "<<coords[1]<<endl;
 	}
 
 	void initCommHelpers()
@@ -356,8 +362,6 @@ struct Solver
 
 		MPI_Cart_shift(cartcomm, 1, -1, &rightRank, &leftRank); 
 		MPI_Cart_shift(cartcomm, 0, -1, &downRank, &upRank); 
-
-		//cout<<rank<<" "<<leftRank<<" "<<rightRank<<" "<<upRank<<" "<<downRank<<endl;
 
 		leftCommHelper = CommHelper(leftRank, ySize, 
 			[&](vector<double>& v)
@@ -423,27 +427,24 @@ struct Solver
 			leftCommHelper.waitRecv();
 			upCommHelper.waitRecv();
 
-			leftCommHelper.recv();
-			rightCommHelper.recv();
-			downCommHelper.recv();
-			upCommHelper.recv();
-
-			leftCommHelper.waitRecv();
-			rightCommHelper.waitRecv();
-			downCommHelper.waitRecv();
-			upCommHelper.waitRecv();
+			leftCommHelper.recvSync();
+			rightCommHelper.recvSync();
+			downCommHelper.recvSync();
+			upCommHelper.recvSync();
 
 			leftCommHelper.waitSend();
 			downCommHelper.waitSend();
 			rightCommHelper.waitSend();
 			upCommHelper.waitSend();
+#define DIAG
 
-			
+#ifdef DIAG
 			for (int d = xLow + yLow; d <= xHi + yHi; d++)
 			{
 				int x0 = (d > xHi + yLow) ? xHi : d - yLow;
 				int y0 = d - x0;
 				int offMax = min(x0 - xLow, yHi - y0);
+
 				//#pragma omp parallel for num_threads(2)
 				for (int off = 0; off <= offMax; off++)
 				{
@@ -452,18 +453,18 @@ struct Solver
 					_A[y][x] = 1. / 4 * (_A[y - 1][x] + _A[y + 1][x] + _A[y][x - 1] + _A[y][x + 1] + _f[y - 1][x - 1]);
 				}
 			}
-
-			/*for (int y = yLow; y <= yHi; y++)
+#else
+			for (int y = yLow; y <= yHi; y++)
 				for (int x = xLow; x <= xHi; x++)
 					_A[y][x] = 1. / 4 * (_A[y - 1][x] + _A[y + 1][x] + _A[y][x - 1] + _A[y][x + 1] + _f[y - 1][x - 1]);
-			*/
+#endif
 
 			rightCommHelper.send();
 			downCommHelper.send();
 
 			borderHandler.handle();
 
-			if (rank == 0 && i % 10 == 0)
+			if (rank == 0 && i % 100 == 0)
 				cout<<"\r"<<i;
 		}
 	}
@@ -488,7 +489,6 @@ struct Solver
 		MPI_Type_contiguous(xSize, MPI_DOUBLE, &lineType);
 		MPI_Type_commit(&lineType);
 
-		vector<double> dummy(xSize);
 		for (int i = 1; i <= ySize; i++)
 			MPI_File_write(fh, &_A[i][1], 1, lineType, MPI_STATUS_IGNORE);
 	}
@@ -510,17 +510,15 @@ int main(int argc, char **argv)
 	data.setBoundaryCondition(Left, 0);
 	data.setBoundaryCondition(Right, 0);*/
 	
-	data.setHeatFlow(Up, 0);
-	data.setHeatFlow(Down, 0);
-	data.setHeatFlow(Left, 0.5);
-	data.setHeatFlow(Right, -0.5);
+	data.setBoundaryCondition(Up, 0);
+	data.setHeatFlow(Down, 1);
+	data.setBoundaryCondition(Left, 0);
+	data.setBoundaryCondition(Right, 0);
 
 	Solver solver(data);
 	
 	double t = MPI_Wtime();
 	solver.solve();
-	solver.outData();
-
 	t = MPI_Wtime() - t;
 	if (solver.rank == 0)
 		cout<<endl;
@@ -531,6 +529,7 @@ int main(int argc, char **argv)
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
+	solver.outData();
     MPI_Finalize();
     return 0;
 }
