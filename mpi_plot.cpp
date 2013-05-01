@@ -9,7 +9,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam);
 
 vector<double> v;
 double _max, _min;
-int Nx, Ny;
+int Nx = 200;
+int Ny = 100;
 const int cellLength = 8;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)
 {
@@ -18,16 +19,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
 	MSG msg;
 	WNDCLASSEX wndclass;
 
-	ifstream in("H:\\plot", ios::binary);
-	in.read((char*)&Nx, sizeof(Nx));
-	in.read((char*)&Ny, sizeof(Ny));
+	ifstream in("C:\\plot", ios::binary);
+	//in.read((char*)&Nx, sizeof(Nx));
+	//in.read((char*)&Ny, sizeof(Ny));
 	v.resize(Nx * Ny);
 	in.read((char*)&v[0], Nx * Ny * sizeof(double));
 	_max = *max_element(v.begin(), v.end());
 	_min = *min_element(v.begin(), v.end());
-	/*vector<vector<double>> vv(Ny);
+	vector<vector<double>> vv(Ny);
 	for (int i = 0; i < Ny; i++)
-		vv[i] = vector<double>(v.begin() + i * Nx, v.begin() + i * Nx + Nx);*/
+		vv[i] = vector<double>(v.begin() + i * Nx, v.begin() + i * Nx + Nx);
 
 	wndclass.cbSize = sizeof(wndclass);
 	wndclass.style = CS_HREDRAW | CS_VREDRAW;
@@ -71,7 +72,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		for (int i = 0; i < Ny; i++)
 			for (int j = 0; j < Nx; j++)
 			{
-				int c = 255 - 255 * pow((v[i * Nx + j] - _min) / (_max - _min), 1);
+				int c = 255 - 255 * pow((v[i * Nx + j] - _min) / (_max - _min), .5);
 				SelectObject(hdc, GetStockObject(NULL_PEN));
 				HBRUSH br = CreateSolidBrush(RGB(255 - c, 0, c));
 				SelectObject(hdc, br);
